@@ -29,7 +29,7 @@ def experiment_task(args, env, exp, fragment_length):
     result_folder = f"{RES_PATH}/{args['exp_type']}/{exp}/fragments_{fragment_length}"
     fasta_file = os.path.join(result_folder, env, f'Extremophiles_{env}.fas')
     print(f"\n Classification is started (scenario 1).")
-    run_supervised_classification(fasta_file, args['max_k'], result_folder, env, exp, args['classifiers'])
+    run_supervised_classification(DATA_PATH, fasta_file, args['max_k'], result_folder, env, exp, args['classifiers'])
     print(f"\n Classification ended (scenario 1).", flush=True)
 
     # Run the supervised classification under the 2nd scenario (challenging)
@@ -73,7 +73,8 @@ def run_pipeline(args):
     elif args["exp_type"] == "exp1":
         classifiers = {"SVM": (SVC, {'kernel': 'rbf', 'class_weight': 'balanced', 'C': 10})}
         args['classifiers'] = classifiers
-        num_exp = 10
+        start = args["continue_exp"]
+        num_exp = args["num_exp"]
 
     elif args["exp_type"] == "exp2":
         classifiers = {
@@ -82,13 +83,14 @@ def run_pipeline(args):
             "ANN": (MLPClassifier, {'hidden_layer_sizes': (256, 64), 'solver': 'adam', 'activation': 'relu', 'alpha': 1, 'learning_rate_init': 0.001, 'max_iter': 300, 'n_iter_no_change': 10})
         }
         args['classifiers'] = classifiers
-        num_exp = 1
+        start = 0
+        num_exp = args["num_exp"]
 
     print(f"\n number of excuters: {os.cpu_count()}")
     with ProcessPoolExecutor() as executor:
         futures = []
         for env in ENVS:
-            for exp in range(num_exp):
+            for exp in range(start, num_exp, 1):
                 for fragment_length in FRAGMENT_LENGTHS:
                     # Submit tasks to the process pool
                     future = executor.submit(experiment_task, args, env, exp, fragment_length)
@@ -103,6 +105,9 @@ def main():
     parser.add_argument('--exp_type', action='store', type=str)
     parser.add_argument('--max_k', action='store', type=int)
     parser.add_argument('--whole_genome', action='store_true')
+    parser.add_argument('--num_exp', action='store', type=int)
+    parser.add_argument('--continue_exp', action='store', type=int)
+
     args = vars(parser.parse_args())
 
     run_pipeline(args)
