@@ -14,7 +14,7 @@ NUM_CLUSTERS = {"Temperature": 4, "pH": 2}
 FRAGMENT_LENGTHS = [10000, 50000, 100000, 250000, 500000, 1000000]
 DATA_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'data'))
 RES_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'results'))
-METADATA_FILE= "Extremophiles_GTDB.tsv"
+METADATA_FILE = "Extremophiles_GTDB.tsv"
 
 def experiment_task(args, env, exp, fragment_length):
     print("\n Running the pipeline is started:")
@@ -31,7 +31,7 @@ def experiment_task(args, env, exp, fragment_length):
     result_folder = f"{RES_PATH}/{args['exp_type']}/{exp}/fragments_{fragment_length}"
 
     print(f"\n Classification is started (scenario 1).")
-    run_supervised_classification(data_folder, args['max_k'], result_folder, env, exp, args['classifiers'])
+    run_supervised_classification(data_folder, result_folder, args['max_k'] , env, exp, args['classifiers'])
     print(f"\n Classification ended (scenario 1).", flush=True)
 
     # Run the supervised classification under the 2nd scenario (challenging)
