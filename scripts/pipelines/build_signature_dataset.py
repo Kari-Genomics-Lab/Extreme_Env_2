@@ -5,7 +5,8 @@ import random
 from scripts.src.utils import clean_sequence
 
 plt.rcParams["font.family"] = "Times New Roman"
-DATASET_FILE = "Extremophiles_GTDB.tsv"
+TAXA = 'Genus'
+GT = "Domain"
 
 def summary_fasta(filename, min_len):
     names, seqs, plasmids = [], [], []
@@ -90,23 +91,24 @@ def produce_fragment(names, seqs, min_len, is_whole_genome=False, max_num_part=1
 
     return fragment
 
-def run_fragment_builder(path, fragment_file, fragment_length, whole_genome, env):
+def run_fragment_builder(data_path, fragment_file, fragment_length, whole_genome, env):
 
-    new_folder_path = os.path.join(path, fragment_file)
+    new_folder_path = os.path.join(data_path, fragment_file)
     os.makedirs(new_folder_path, exist_ok=True)
+    env_folder = os.path.join(new_folder_path, env)
+    os.makedirs(env_folder, exist_ok=True)
 
-    dataset_path = os.path.join(path, DATASET_FILE)
+    dataset_path = os.path.join(data_path, DATASET_FILE)
     dataset = pd.read_csv(dataset_path, delimiter='\t')
 
     # Filter dataset for missing assemblies
-    dataset = filter_assemblies(dataset, path)
-    env_folder = os.path.join(new_folder_path, env)
-    os.makedirs(env_folder, exist_ok=True)
+    dataset = filter_assemblies(dataset, data_path)
+
 
     # Filter dataset for non-null environmental values
     dataset_env = dataset[dataset[env].notnull()]
 
-    process_environmental_data(dataset_env, path, env_folder, env, fragment_length, whole_genome)
+    process_environmental_data(dataset_env, data_path, env_folder, env, fragment_length, whole_genome)
 
 def filter_assemblies(dataset, path):
     removed = []
@@ -136,7 +138,7 @@ def process_environmental_data(dataset_env, path, env_folder, env_type, fragment
 
             acc = assembly
             aux_dataset.append([acc, assembly, domain, row[env_type], domain + '_' + env_type,
-                                row['Genus'], row['Species'], row['tax_cluster_id'], len(fragment)])
+                                row[TAXA], row['Species'], row['tax_cluster_id'], len(fragment)])
 
             fasta = ('>%s\n%s\n' % (acc, fragment))
             with open(f'{env_folder}/Extremophiles_{env_type}.fas', 'a') as f:
@@ -144,7 +146,7 @@ def process_environmental_data(dataset_env, path, env_folder, env_type, fragment
 
     # Generate summary files
     summary_df = pd.DataFrame(aux_dataset, columns=[
-        'sequence_id', 'Assembly', 'Domain', env_type, 'cluster_id', 'genus',
+        'sequence_id', 'Assembly', 'Domain', env_type, 'cluster_id', TAXA,
         'species', 'tax_cluster_id', 'len'])
 
     summary_path = os.path.join(env_folder, f'Extremophiles_{env_type}_Summary.tsv')
@@ -178,10 +180,10 @@ def process_assembly(assembly_path, row, env_folder):
 
 
 def export_summary_data(summary_path, env_folder, env_type):
-    df = pd.read_csv(summary_path, sep='\t', usecols=['sequence_id', 'Domain', 'Assembly'])
-    df.rename(columns={'Domain': 'cluster_id'}, inplace=True)
+    df = pd.read_csv(summary_path, sep='\t', usecols=['sequence_id', 'Assembly', GT, TAXA])
+    df.rename(columns={GT: 'cluster_id'}, inplace=True)
     df.to_csv(os.path.join(env_folder, f'Extremophiles_{env_type}_GT_Tax.tsv'), sep='\t')
 
-    df = pd.read_csv(summary_path, sep='\t', usecols=['sequence_id', env_type, 'Assembly'])
+    df = pd.read_csv(summary_path, sep='\t', usecols=['sequence_id', 'Assembly', env_type, TAXA])
     df.rename(columns={env_type: 'cluster_id'}, inplace=True)
     df.to_csv(os.path.join(env_folder, f'Extremophiles_{env_type}_GT_Env.tsv'), sep='\t')

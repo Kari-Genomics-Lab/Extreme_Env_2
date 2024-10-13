@@ -9,8 +9,11 @@ from multiprocessing import Lock
 
 warnings.filterwarnings("ignore")
 lock = Lock()
+METADATA = "Extremophiles_GTDB.tsv"
+TAXA = "Genus"
 
-def save_results(result, dataset, result_folder, run):
+def save_results(result_folder, result, dataset, run):
+    os.makedirs(result_folder, exist_ok=True)
     file_path = os.path.join(result_folder, f'Challenging_Supervised_Results_{dataset}.json')
     lock.acquire()  # Acquire lock before accessing the file
     try:
@@ -35,51 +38,35 @@ def load_json_results(path, continue_flag):
     return {}
 
 
-def preprocess_data(fasta_file, summary_file):
-    names, _, _, _ = SummaryFasta(fasta_file)
-    summary_dataset = pd.read_csv(summary_file, sep='\t',
-                                  usecols=["Domain", "Radio_label", "Assembly", "Genus", "Species"])
-    assembly_dict = {name: summary_dataset[summary_dataset["Assembly"] == name].iloc[0]
-                     for name in names if summary_dataset["Assembly"].eq(name).any()}
-    data = pd.DataFrame({
-        "Domain": [info["Domain"] for info in assembly_dict.values()],
-        "Genus": [info["Genus"] for info in assembly_dict.values()],
-        "Species": [info["Species"] for info in assembly_dict.values()],
-        "Assembly": [info["Assembly"] for info in assembly_dict.values()],
-        "sequence_id": list(assembly_dict.keys())
-    })
-    return data
 
-
-def run_supervised_classification_challenging(path, fasta_file, max_k, result_folder, env, exp, classifiers):
-
-    data = preprocess_data(fasta_file, f"{path}/Extremophiles_GTDB_Radio.tsv")
+def run_supervised_classification_challenging(data_folder, result_folder, max_k, env, exp, classifiers):
+    fasta_file = os.path.join(data_folder, f'Extremophiles_{env}.fas')
     results_json = {}
     for k in range(1, max_k + 1):
         results_json[k] = {}
         _, kmers = kmersFasta(fasta_file, k=k, transform=None, reduce=True)
         kmers_normalized = np.transpose((np.transpose(kmers) / np.linalg.norm(kmers, axis=1)))
-        results_json = perform_classification(kmers_normalized, k, results_json, result_folder, env, data, classifiers)
+        results_json = perform_classification(data_folder, kmers_normalized, k, results_json, env, classifiers)
         print(f"Finished processing k = {k}", flush=True)
         del kmers_normalized
-    save_results(results_json, env, result_folder, exp)
+    save_results(result_folder, results_json, env, exp)
 
 
-def perform_classification(kmers, k, results_json, result_folder, env, data, classifiers):
+def perform_classification(data_folder ,kmers, k, results_json, env, classifiers):
 
-    env_file = os.path.join(result_folder, env, f'Extremophiles_{env}_GT_Env.tsv')
-    tax_file = os.path.join(result_folder, env, f'Extremophiles_{env}_GT_Tax.tsv')
+    env_file = os.path.join(data_folder, env, f'Extremophiles_{env}_GT_Env.tsv')
+    tax_file = os.path.join(data_folder, env, f'Extremophiles_{env}_GT_Tax.tsv')
 
     for name, (algorithm, params) in classifiers.items():
         results_json[k][name] = [0, 0]
         for index, label_file in enumerate([env_file, tax_file]):
             label_data = pd.read_csv(label_file, sep='\t')
-            results_json[k][name][index] = cross_validate_model(kmers, label_data, algorithm, params, data)
+            results_json[k][name][index] = cross_validate_model(kmers, label_data, algorithm, params)
 
     return results_json
 
 
-def cross_validate_model(kmers, label_data, algorithm, params, data):
+def cross_validate_model(kmers, label_data, algorithm, params):
     label_data.reset_index(drop=True, inplace=True)  # Reset index if not already aligned
     kmers_df = pd.DataFrame(kmers)
     Dataset = pd.concat([label_data['cluster_id'], kmers_df], axis=1).dropna()
@@ -91,7 +78,7 @@ def cross_validate_model(kmers, label_data, algorithm, params, data):
 
     scores = []
 
-    for train_idx, test_idx in skf.split(Dataset, Dataset['cluster_id'], groups=data["Genus"].values):
+    for train_idx, test_idx in skf.split(Dataset, Dataset['cluster_id'], groups=label_data[TAXA].values):
         model = algorithm(**params)
         x_train, y_train = Dataset.iloc[train_idx].drop('cluster_id', axis=1), Dataset.iloc[train_idx]['cluster_id']
         x_test, y_test = Dataset.iloc[test_idx].drop('cluster_id', axis=1), Dataset.iloc[test_idx]['cluster_id']

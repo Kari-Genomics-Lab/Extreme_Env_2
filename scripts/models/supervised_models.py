@@ -9,9 +9,12 @@ import warnings
 from multiprocessing import Lock
 
 warnings.filterwarnings("ignore")
+
 lock = Lock()
 
-def save_results(result, dataset, result_folder, run):
+def save_results(result_folder, result, dataset, run):
+
+    os.makedirs(result_folder, exist_ok=True)
     file_path = os.path.join(result_folder, f'Supervised_Results_{dataset}.json')
     lock.acquire()  # Acquire lock before accessing the file
     try:
@@ -34,19 +37,20 @@ def load_json_results(path, continue_flag):
     return {}
 
 
-def run_supervised_classification(data_folder, fasta_file, max_k, result_folder, env, exp, classifiers):
+def run_supervised_classification(data_folder, result_folder, max_k, env, exp, classifiers):
     results_json = {}
+    fasta_file =  os.path.join(data_folder, f'Extremophiles_{env}.fas')
     for k in range(1, max_k + 1):
         results_json[k] = {}
         _, kmers = kmersFasta(fasta_file, k=k, transform=None, reduce=True)
         kmers_normalized = np.transpose((np.transpose(kmers) / np.linalg.norm(kmers, axis=1)))
-        results_json = perform_classification(data_folder, kmers_normalized, k, results_json, result_folder, env, classifiers)
+        results_json = perform_classification(data_folder, kmers_normalized, k, results_json, env, classifiers)
         print(f"Finished processing k = {k}", flush=True)
         del kmers_normalized
-    save_results(results_json, env, result_folder, exp)
+    save_results(result_folder, results_json, env, exp)
 
 
-def perform_classification(data_folder ,kmers, k, results_json, result_folder, env, classifiers):
+def perform_classification(data_folder, kmers, k, results_json, env, classifiers):
 
     env_file = os.path.join(data_folder, env, f'Extremophiles_{env}_GT_Env.tsv')
     tax_file = os.path.join(data_folder, env, f'Extremophiles_{env}_GT_Tax.tsv')
