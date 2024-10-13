@@ -8,6 +8,7 @@ plt.rcParams["font.family"] = "Times New Roman"
 TAXA = 'Genus'
 GT = "Domain"
 
+
 def summary_fasta(filename, min_len):
     names, seqs, plasmids = [], [], []
     seq_id = ""
@@ -91,14 +92,14 @@ def produce_fragment(names, seqs, min_len, is_whole_genome=False, max_num_part=1
 
     return fragment
 
-def run_fragment_builder(data_path, fragment_file, fragment_length, whole_genome, env):
+def run_fragment_builder(data_path, dataset_file, fragment_file, fragment_length, whole_genome, env):
 
     new_folder_path = os.path.join(data_path, fragment_file)
     os.makedirs(new_folder_path, exist_ok=True)
     env_folder = os.path.join(new_folder_path, env)
     os.makedirs(env_folder, exist_ok=True)
 
-    dataset_path = os.path.join(data_path, DATASET_FILE)
+    dataset_path = os.path.join(data_path, dataset_file)
     dataset = pd.read_csv(dataset_path, delimiter='\t')
 
     # Filter dataset for missing assemblies

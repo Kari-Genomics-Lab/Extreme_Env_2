@@ -14,7 +14,7 @@ NUM_CLUSTERS = {"Temperature": 4, "pH": 2}
 FRAGMENT_LENGTHS = [10000, 50000, 100000, 250000, 500000, 1000000]
 DATA_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'data'))
 RES_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'results'))
-
+METADATA_FILE= "Extremophiles_GTDB.tsv"
 
 def experiment_task(args, env, exp, fragment_length):
     print("\n Running the pipeline is started:")
@@ -22,7 +22,7 @@ def experiment_task(args, env, exp, fragment_length):
     # Building the fragments
     fragment_file = f"{args['exp_type']}/{exp}/fragments_{fragment_length}"
     print(f"\n Building fragment with length {fragment_length} is started.")
-    run_fragment_builder(DATA_PATH, fragment_file, fragment_length, args['whole_genome'], env)
+    run_fragment_builder(DATA_PATH, METADATA_FILE, fragment_file, fragment_length, args['whole_genome'], env)
     print(f"\n Fragment with length {fragment_length} has been created.", flush=True)
 
     # Run the supervised classification under the first scenario (not challenging)
