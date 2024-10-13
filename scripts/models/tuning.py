@@ -9,7 +9,7 @@ import json
 import os
 import pandas as pd
 import numpy as np
-from src.utils import kmersFasta
+from scripts.src.utils import kmersFasta
 
 import warnings
 from multiprocessing import Lock
