@@ -54,8 +54,8 @@ def run_supervised_classification_challenging(data_folder, result_folder, max_k,
 
 def perform_classification(data_folder ,kmers, k, results_json, env, classifiers):
 
-    env_file = os.path.join(data_folder, env, f'Extremophiles_{env}_GT_Env.tsv')
-    tax_file = os.path.join(data_folder, env, f'Extremophiles_{env}_GT_Tax.tsv')
+    env_file = os.path.join(data_folder, f'Extremophiles_{env}_GT_Env.tsv')
+    tax_file = os.path.join(data_folder, f'Extremophiles_{env}_GT_Tax.tsv')
 
     for name, (algorithm, params) in classifiers.items():
         results_json[k][name] = [0, 0]
