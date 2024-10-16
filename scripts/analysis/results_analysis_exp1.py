@@ -1,12 +1,12 @@
 import os
 import json
 import numpy as np
-
+import os
 # Base directory where your folders are extracted
-base_dir = '../results/supervised_classification/exp1/'
+RES_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'results'))
 
 # Experiment folders
-experiment_folders = ['0', '1', '2', '3', '4']
+experiment_folders = [str(i) for i in range(0, 10)]
 
 # Fragment sizes
 fragment_sizes = ['10000', '50000', '100000', '250000', '500000', '1000000']
@@ -18,12 +18,12 @@ def statistical_resutls(env):
 
     # Iterate through each experiment folder
     for exp_folder in experiment_folders:
-        exp_folder_path = os.path.join(base_dir, exp_folder)
+        exp_folder_path = os.path.join(RES_PATH,'supervised_classification/exp1',exp_folder)
 
         # Iterate through each fragment size
         for fragment in fragment_sizes:
             fragment_path = os.path.join(exp_folder_path, f'fragments_{fragment}')
-            temperature_file = f'Challenging_Supervised_Results_{env}.json'
+            temperature_file = f'Supervised_Results_{env}.json'
 
             # Construct full path to the JSON file
             json_path = os.path.join(fragment_path, temperature_file)
@@ -40,6 +40,7 @@ def statistical_resutls(env):
                         data_storage[fragment][k_str]['env_values'].append(data[k_str]['SVM'][0])
                         data_storage[fragment][k_str]['tax_values'].append(data[k_str]['SVM'][1])
 
+    # print(data_storage)
     # Compute averages and variances for each fragment and k-mer size
     results = {fragment: {str(k): {} for k in range(1, 10)} for fragment in fragment_sizes}
     for fragment in fragment_sizes:
@@ -48,10 +49,12 @@ def statistical_resutls(env):
             env_values = data_storage[fragment][k_str]['env_values']
             tax_values = data_storage[fragment][k_str]['tax_values']
             if env_values and tax_values:  # Ensure there are values to compute stats
+
                 results[fragment][k_str]['environment_avg'] = np.mean(env_values) * 100
                 results[fragment][k_str]['environment_var'] = np.var(env_values) * 100
                 results[fragment][k_str]['taxonomy_avg'] = np.mean(tax_values) * 100
                 results[fragment][k_str]['taxonomy_var'] = np.var(tax_values) * 100
+
 
     # Output the final average results
     for fragment in fragment_sizes:
@@ -62,17 +65,18 @@ def statistical_resutls(env):
                 f"  K-mer {k}: Environment Avg: {results[fragment][k_str]['environment_avg']}, Environment Var: {results[fragment][k_str]['environment_var']}, Taxonomy Avg: {results[fragment][k_str]['taxonomy_avg']}, Taxonomy Var: {results[fragment][k_str]['taxonomy_var']}")
 
     # Optionally, save the results to a file
-    output_path = os.path.join(base_dir, f'statistical_results_{env}.json')
+    output_path = os.path.join(RES_PATH, f'statistical_results_{env}.json')
     with open(output_path, 'w') as file:
         json.dump(results, file, indent=4)
 
     print(f'Statistical results saved to {output_path}')
 
-statistical_resutls('pH')
-statistical_resutls('temperature')
+env = "temperature"
+# statistical_resutls('pH')
+statistical_resutls(env)
 
 # Load the previously saved statistical results
-results_path = os.path.join(base_dir, 'statistical_results_pH.json')
+results_path = os.path.join(RES_PATH, f'statistical_results_{env}.json')
 with open(results_path, 'r') as file:
     results = json.load(file)
 
@@ -112,7 +116,7 @@ for fragment in max_averages:
         f"  Max Taxonomy Avg: {max_averages[fragment]['max_tax_avg']} (Variance: {max_averages[fragment]['var_tax']}, K-mer: {max_averages[fragment]['kmer_tax']})")
 
 # save the max averages to a file
-output_max_path = os.path.join(base_dir, 'max_averages_var_results_pH.json')
+output_max_path = os.path.join(RES_PATH, 'max_averages_var_results_pH.json')
 with open(output_max_path, 'w') as file:
     json.dump(max_averages, file, indent=4)
 
