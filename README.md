@@ -1,4 +1,4 @@
-Note: The repo is not finalized yet. 
+
 # Extremophiles Genomic Signature Analysis
 
 This repository contains the code and data for the paper titled "Maximally divergent microbes share similar genomic signatures linked to extreme environments" by Monireh Safari, Joseph Butler, Gurjit S Randhawa, Kathleen A Hill, and Lila Kari.
