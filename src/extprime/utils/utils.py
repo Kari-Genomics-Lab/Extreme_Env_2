@@ -3,7 +3,7 @@ sys.path.append('src/')
 import pyximport 
 pyximport.install()
 
-from src.extprime.utils import kmer_counts
+from extprime.utils import kmer_counts
 
 import random, itertools
 import numpy as np

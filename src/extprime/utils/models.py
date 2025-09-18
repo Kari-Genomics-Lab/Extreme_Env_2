@@ -11,8 +11,8 @@ from torch.utils.data import DataLoader, Dataset
 
 #sys.path.append('../src/')
 
-from src.LossFunctions import info_nce_loss
-from src.utils import create_dataloader, SummaryFasta, SequenceDataset, kmersFasta
+#from LossFunctions import info_nce_loss
+from utils import create_dataloader, SummaryFasta, SequenceDataset, kmersFasta
 
 
 # Random Seeds for reproducibility.
