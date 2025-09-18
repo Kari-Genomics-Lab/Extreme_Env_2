@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 import shap
-from src.extprime.utils.utils import kmersFasta
+from extprime.utils.utils import kmersFasta
 import json
 import matplotlib.pyplot as plt
 import os

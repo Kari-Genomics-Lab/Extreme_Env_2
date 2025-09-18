@@ -7,7 +7,7 @@ import json
 import os
 import pandas as pd
 import numpy as np
-from src.extprime.utils.utils import kmersFasta
+from extprime.utils.utils import kmersFasta
 
 import warnings
 from multiprocessing import Lock

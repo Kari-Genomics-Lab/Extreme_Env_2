@@ -3,7 +3,7 @@ import os
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import StratifiedGroupKFold
-from src.extprime.utils.utils import SummaryFasta, kmersFasta
+from extprime.utils.utils import SummaryFasta, kmersFasta
 import warnings
 from multiprocessing import Lock
 

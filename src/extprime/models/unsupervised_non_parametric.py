@@ -6,8 +6,8 @@ import hdbscan
 from sklearn.metrics import homogeneity_completeness_v_measure as cluster_quality
 import os
 import vamb
-from src.extprime.utils.idelucs.cluster import iDeLUCS_cluster
-from src.extprime.utils.utils import kmersFasta
+from extprime.utils.idelucs.cluster import iDeLUCS_cluster
+from extprime.utils.utils import kmersFasta
 from sklearn.cluster import MeanShift
 from sklearn.cluster import AffinityPropagation
 

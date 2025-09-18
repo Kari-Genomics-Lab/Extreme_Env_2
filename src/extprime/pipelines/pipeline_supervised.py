@@ -4,10 +4,10 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.neural_network import MLPClassifier
 from sklearn.svm import SVC
 import os
-from src.extprime.genome_proxy.genome_proxy_builder import run_fragment_builder
-from src.extprime.models.supervised_models import run_supervised_classification
-from src.extprime.models.supervised_models_challenging import run_supervised_classification_challenging
-from src.extprime.models.model_tuning import run_supervised_classification_tuning
+from extprime.genome_proxy.genome_proxy_builder import run_fragment_builder
+from extprime.models.supervised_models import run_supervised_classification
+from extprime.models.supervised_models_challenging import run_supervised_classification_challenging
+from extprime.models.model_tuning import run_supervised_classification_tuning
 
 ENVS = ["Temperature", "pH"]
 NUM_CLUSTERS = {"Temperature": 4, "pH": 2}

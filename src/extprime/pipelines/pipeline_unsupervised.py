@@ -1,6 +1,6 @@
 import argparse
-from src.extprime.models.unsupervised_non_parametric import run_models, analyze_clustering
-from src.extprime.analysis.candidates_identification import candidates_identification
+from extprime.models.unsupervised_non_parametric import run_models, analyze_clustering
+from extprime.analysis.candidates_identification import candidates_identification
 
 ENVS = ["Temperature", "pH"]
 NUM_CLUSTERS = {"Temperature": 4, "pH": 2}

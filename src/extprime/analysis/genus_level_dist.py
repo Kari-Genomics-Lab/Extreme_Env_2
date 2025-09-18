@@ -3,7 +3,7 @@ import os
 import pandas as pd
 import lpips
 import json
-import scripts.src.CGR_utils as CGR_utils
+import extprime.utilsCGR_utils as CGR_utils
 import cv2
 import numpy as np
 

@@ -2,7 +2,7 @@ import pandas as pd
 import os
 import matplotlib.pyplot as plt
 import random
-from src.extprime.utils.utils import clean_sequence
+from extprime.utils.utils import clean_sequence
 
 plt.rcParams["font.family"] = "Times New Roman"
 DATASET_FILE = "Extremophiles_GTDB.tsv"

@@ -6,7 +6,7 @@ import lpips
 import torch
 import numpy as np
 from PIL import Image
-import src.extprime.utils.CGR_utils as CGR_utils
+import extprime.utils.CGR_utils as CGR_utils
 import os
 from Bio import SeqIO
 import math

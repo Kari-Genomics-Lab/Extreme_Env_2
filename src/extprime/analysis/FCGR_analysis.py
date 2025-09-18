@@ -1,7 +1,7 @@
 """Generating avoided pattern plot for the paper"""
 import json
 import matplotlib.pyplot as plt
-import src.extprime.utils.CGR_utils as CGR_utils
+import extprime.utils.CGR_utils as CGR_utils
 from Bio import SeqIO
 import os
 import pandas as pd
