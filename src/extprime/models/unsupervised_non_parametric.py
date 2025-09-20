@@ -5,7 +5,7 @@ import umap
 import hdbscan
 from sklearn.metrics import homogeneity_completeness_v_measure as cluster_quality
 import os
-import vamb
+#import vamb
 from extprime.utils.idelucs.cluster import iDeLUCS_cluster
 from extprime.utils.utils import kmersFasta
 from sklearn.cluster import MeanShift
@@ -15,22 +15,22 @@ from sklearn.cluster import AffinityPropagation
 
 TAX_LEVEL = 'Genus'
 # Dimensionality reduction functions
-def VAE(sequence_file):
-    with vamb.vambtools.Reader(sequence_file) as filehandle:
-        composition = vamb.parsecontigs.Composition.from_file(filehandle)
-
-    rpkms = np.ones((composition.matrix.shape[0], 1), dtype=np.float32)
-    dataloader = vamb.encode.make_dataloader(
-        rpkms,
-        composition.matrix,
-        composition.metadata.lengths,
-    )
-    vae = vamb.encode.VAE(nsamples=1, nlatent=32)
-    vae.trainmodel(dataloader)
-    latent = vae.encode(dataloader)
-    names = composition.metadata.identifiers
-
-    return names, latent
+# def VAE(sequence_file):
+#     with vamb.vambtools.Reader(sequence_file) as filehandle:
+#         composition = vamb.parsecontigs.Composition.from_file(filehandle)
+#
+#     rpkms = np.ones((composition.matrix.shape[0], 1), dtype=np.float32)
+#     dataloader = vamb.encode.make_dataloader(
+#         rpkms,
+#         composition.matrix,
+#         composition.metadata.lengths,
+#     )
+#     vae = vamb.encode.VAE(nsamples=1, nlatent=32)
+#     vae.trainmodel(dataloader)
+#     latent = vae.encode(dataloader)
+#     names = composition.metadata.identifiers
+#
+#     return names, latent
 
 def UMAP(sequence_file=None):
     names, kmers = kmersFasta(sequence_file, k=6)
@@ -126,7 +126,7 @@ def run_models(env, path, data_path, fragment_length, k):
                       'batch_sz': 512, 'k': 6, 'weight': 0.25, 'n_voters': 5}
 
     models = {
-        "VAE": VAE,
+        # "VAE": VAE,
         "UMAP": UMAP,
         "iDeLUCS": ""
     }
