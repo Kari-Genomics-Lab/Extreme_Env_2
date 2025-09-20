@@ -131,15 +131,17 @@ def run_models(env, path, data_path, fragment_length, k):
         #"iDeLUCS": ""
     }
 
-    clust_algorithms = {"IM": IM, "HDBSCAN": DBSCAN, "affinity_propagation": affinity_propagation,
+    clust_algorithms = {
+        #"IM": IM,
+                        "HDBSCAN": DBSCAN, "affinity_propagation": affinity_propagation,
                         "meanshift": meanshift}
 
     for model_name, model_func in models.items():
         print(f"......... Processing {model_name} ...............")
         if model_name == "iDeLUCS":
-            model = iDeLUCS_cluster(**idelucs_params)
-            labels, latent = model.fit_predict(sequence_file)
-
+            # model = iDeLUCS_cluster(**idelucs_params)
+            # labels, latent = model.fit_predict(sequence_file)
+            pass
         else:
             names, latent = model_func(sequence_file)
             for clust_name, clust_func in clust_algorithms.items():
