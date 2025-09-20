@@ -128,7 +128,7 @@ def run_models(env, path, data_path, fragment_length, k):
     models = {
         # "VAE": VAE,
         "UMAP": UMAP,
-        "iDeLUCS": ""
+        #"iDeLUCS": ""
     }
 
     clust_algorithms = {"IM": IM, "HDBSCAN": DBSCAN, "affinity_propagation": affinity_propagation,
