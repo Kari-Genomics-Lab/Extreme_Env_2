@@ -6,7 +6,7 @@ import hdbscan
 from sklearn.metrics import homogeneity_completeness_v_measure as cluster_quality
 import os
 #import vamb
-from extprime.utils.idelucs.cluster import iDeLUCS_cluster
+#from extprime.utils.idelucs.cluster import iDeLUCS_cluster
 from extprime.utils.utils import kmersFasta
 from sklearn.cluster import MeanShift
 from sklearn.cluster import AffinityPropagation
@@ -72,9 +72,9 @@ def DBSCAN(latent, names):
     return clusterer.labels_
 
 
-def iDeLUCS(sequence_file=None, params=None):
-    model = iDeLUCS_cluster(**params)
-    return model.fit_predict(sequence_file)
+# def iDeLUCS(sequence_file=None, params=None):
+#     model = iDeLUCS_cluster(**params)
+#     return model.fit_predict(sequence_file)
 
 
 def insert_assignment(summary_dataset, assignment_algo, GT_file, labels):
