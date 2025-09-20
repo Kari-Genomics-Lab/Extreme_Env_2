@@ -11,12 +11,12 @@ def run_pipeline(args):
     fragement_length = args["fragement_length"]
     k = args["k_mer"]
     path = args["fragment_path"]
-    data_path = args["data_path"]
+    data_path = args["data_root"]
 
 
     if args["exp_type"] == "parametric":
         n_clusters = args["n_clusters"]
-        results_folder = args["results_folder"]
+        results_folder = args["outputs_root"]
         Env = args["Env"]
         for env in ENVS:
             if Env:
@@ -40,10 +40,10 @@ def main():
     parser.add_argument('--k_mer', action='store', type=int)
     parser.add_argument('--fragement_length', action='store', type=int)
     parser.add_argument('--n_clusters', action='store', type=int, default=4)
-    parser.add_argument('--results_folder', action='store', type=str)
-    parser.add_argument('--Env', action='store true', type=str)
+    parser.add_argument('--outputs_root', action='store', type=str)
+    parser.add_argument('--env', action='store true', type=str)
     parser.add_argument('--fragment_path', type=str)
-    parser.add_argument('--data_path', type=str)
+    parser.add_argument('--data_root', type=str)
 
     args = vars(parser.parse_args())
 
