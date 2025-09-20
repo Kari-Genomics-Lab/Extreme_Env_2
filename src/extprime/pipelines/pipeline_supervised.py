@@ -22,9 +22,9 @@ def experiment_task(args, env, exp, fragment_length, n=10):
     print("\n Running the pipeline is started:")
 
     # Building the fragments
-    fragment_file = f"{args['exp_type']}/{exp}/{n}/fragments_{fragment_length}"
+    fragment_file = f"{OUTPUT_PATH}/{args['exp_type']}/{exp}/{n}/fragments_{fragment_length}"
     print(f"\n Building fragment with length {fragment_length} is started.")
-    run_fragment_builder(OUTPUT_PATH, fragment_file, fragment_length, args['whole_genome'], env, n)
+    run_fragment_builder(DATA_PATH, fragment_file, fragment_length, args['whole_genome'], env, n)
     print(f"\n Fragment with length {fragment_length} has been created.", flush=True)
 
     # Run the supervised classification under the first scenario (not challenging)

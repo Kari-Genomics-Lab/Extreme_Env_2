@@ -92,15 +92,14 @@ def produce_fragment(names, seqs, min_len, is_whole_genome=False, max_num_part=1
 
 def run_fragment_builder(path, fragment_file, fragment_length, whole_genome, env, n=10):
 
-    new_folder_path = os.path.join(path, fragment_file)
-    os.makedirs(new_folder_path, exist_ok=True)
+    os.makedirs(fragment_file, exist_ok=True)
 
     dataset_path = os.path.join(path, DATASET_FILE)
     dataset = pd.read_csv(dataset_path, delimiter='\t')
 
     # Filter dataset for missing assemblies
     dataset = filter_assemblies(dataset, path)
-    env_folder = os.path.join(new_folder_path, env)
+    env_folder = os.path.join(fragment_file, env)
     os.makedirs(env_folder, exist_ok=True)
 
     # Filter dataset for non-null environmental values
