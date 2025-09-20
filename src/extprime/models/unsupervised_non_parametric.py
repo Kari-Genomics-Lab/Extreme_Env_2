@@ -77,7 +77,7 @@ def DBSCAN(latent, names):
 #     return model.fit_predict(sequence_file)
 
 
-def insert_assignment(summary_dataset, assignment_algo, GT_file, labels):
+def insert_assignment(summary_dataset, assignment_algo, GT_file, labels, result_folder):
     """
     Updates the summary dataset with new cluster assignments and calculates cluster quality metrics using the specified taxonomic level.
 
@@ -102,7 +102,7 @@ def insert_assignment(summary_dataset, assignment_algo, GT_file, labels):
         y = np.array([label_mapping[genus] for genus in GT])
         y_pred = summary_dataset[assignment_algo].to_numpy()
         results = cluster_quality(y, y_pred)
-        summary_dataset.to_csv("assigned_summary.csv")
+        summary_dataset.to_csv(f"{result_folder}/assigned_summary.csv")
 
         print(f'Clustering Quality for {assignment_algo}:', results)
         return summary_dataset
@@ -110,7 +110,7 @@ def insert_assignment(summary_dataset, assignment_algo, GT_file, labels):
         print(f'Column "{TAX_LEVEL}" not found in summary_dataset for clustering quality calculation.')
 
 
-def run_models(env, path, data_path, fragment_length, k):
+def run_models(env, path, data_path, fragment_length, k, result_folder):
     result_folder = f"{path}/fragments_{fragment_length}"
 
     summary_file = f'{data_path}/Extremophiles_GTDB.tsv'
@@ -148,11 +148,11 @@ def run_models(env, path, data_path, fragment_length, k):
                 if clust_name == "IM":
                     labels = clust_func(latent, names, sequence_file)
                     assignment_algo = f'{model_name}+{clust_name}'
-                    insert_assignment(summary_dataset, assignment_algo, GT_file, labels)
+                    insert_assignment(summary_dataset, assignment_algo, GT_file, labels, result_folder)
                 else:
                     labels = clust_func(latent, names)
                     assignment_algo = f'{model_name}+{clust_name}'
-                    insert_assignment(summary_dataset, assignment_algo, GT_file, labels)
+                    insert_assignment(summary_dataset, assignment_algo, GT_file, labels, result_folder)
         if model_name == "iDeLUCS":
             insert_assignment(summary_dataset, model_name, GT_file, labels)
 

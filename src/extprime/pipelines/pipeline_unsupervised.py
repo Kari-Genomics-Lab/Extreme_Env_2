@@ -28,7 +28,7 @@ def run_pipeline(args):
         results_folder = args["outputs_root"]
         for env in ENVS:
           for exp in range(EXP_NUM):
-            summary_dataset, algo_names = run_models(env, path, data_path, fragement_length, k)
+            summary_dataset, algo_names = run_models(env, path, data_path, fragement_length, k, result_folder)
             # for algo in algo_names:
             analyze_clustering(algo_names, summary_dataset, env, results_folder)
             candidates_identification(summary_dataset, env, results_folder)
