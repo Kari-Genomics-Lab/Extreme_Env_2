@@ -25,14 +25,13 @@ def run_pipeline(args):
                 run_models(n_clusters, results_folder, env, k, "Tax")
 
     elif args["exp_type"] == "non-parametric":
-
+        results_folder = args["outputs_root"]
         for env in ENVS:
           for exp in range(EXP_NUM):
             summary_dataset, algo_names = run_models(env, path, data_path, fragement_length, k)
-            print(summary_dataset)
             # for algo in algo_names:
-            analyze_clustering(algo_names, summary_dataset, env)
-            candidates_identification(summary_dataset, env)
+            analyze_clustering(algo_names, summary_dataset, env, results_folder)
+            candidates_identification(summary_dataset, env, results_folder)
 
 
 def main():

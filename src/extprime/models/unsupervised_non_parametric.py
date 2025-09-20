@@ -187,7 +187,7 @@ def analyze_result(summary_dataset, dataset_column):
     return df_env_taxa
 
 
-def analyze_clustering(algo_names, summary_dataset, env):
+def analyze_clustering(algo_names, summary_dataset, env, results_folder):
 
     GOOD_CLUSTERS = {}
     df = analyze_result(summary_dataset, env)
@@ -250,16 +250,16 @@ def analyze_clustering(algo_names, summary_dataset, env):
             df.loc[df[env] == key, name] = look[key]
 
     # Plot the merged dataframe
-    plot_results(df, env)
+    plot_results(df, env, results_folder)
 
 
-def plot_results(df, env):
+def plot_results(df, env, results_folder):
     df.plot.bar(x=env, rot=0, figsize=(8, 6.8), legend=True, width=0.4, fontsize=14)
     plt.title("No. True Genera vs. No. Recovered Genera by each Algorithm", fontsize=16)
     plt.ylabel("No. Genera", fontsize=14)
     plt.ylim(0, 37)
     plt.xlabel(env, fontsize=14)
-    plt.savefig(f"Unsupervised_{env}.png", format="png")
+    plt.savefig(f"{results_folder}/Unsupervised_{env}.png", format="png")
 
 
 

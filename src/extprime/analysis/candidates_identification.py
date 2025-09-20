@@ -6,17 +6,22 @@ import re
 from extprime.utils.utils import clean_sequence
 
 
+# GOOD_ALGO = {"Temperature":
+#                  ["VAE+IM", "VAE+affinity_propagation", "VAE+HDBSCAN", "UMAP+HDBSCAN", "iDeLUCS"],
+#              "pH":
+#                  ["VAE+IM", "VAE+affinity_propagation", "VAE+HDBSCAN", "iDeLUCS"]}
 GOOD_ALGO = {"Temperature":
-                 ["VAE+IM", "VAE+affinity_propagation", "VAE+HDBSCAN", "UMAP+HDBSCAN", "iDeLUCS"],
-             "pH":
-                 ["VAE+IM", "VAE+affinity_propagation", "VAE+HDBSCAN", "iDeLUCS"]}
+                 ["UMAP+HDBSCAN"],
+             # "pH":
+             #     ["VAE+IM", "VAE+affinity_propagation", "VAE+HDBSCAN", "iDeLUCS"]
+                  }
 k = 8
 ENVS = ["Temperature", "pH"]
 ids_2_dist = {}
 
-def candidates_identification(summary_dataset, env):
+def candidates_identification(summary_dataset, env, results_folder):
     pairs = {}
-    file_path = os.path.join(f'/content/candidates_{env}.json')
+    file_path = os.path.join(f'{results_folder}/candidates_{env}.json')
     if os.path.isfile(file_path):
         with open(file_path, 'r') as file:
             pairs = json.load(file)
