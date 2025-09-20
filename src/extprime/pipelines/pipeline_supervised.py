@@ -17,25 +17,26 @@ N_LENGTHS = [100, 500, 1000, 5000, 10000, 50000, 100000]
 
 def experiment_task(args, env, exp, fragment_length, n=10):
     DATA_PATH = args['data_root']
+    OUTPUT_PATH = args['output_root']
 
     print("\n Running the pipeline is started:")
 
     # Building the fragments
     fragment_file = f"{args['exp_type']}/{exp}/{n}/fragments_{fragment_length}"
     print(f"\n Building fragment with length {fragment_length} is started.")
-    run_fragment_builder(DATA_PATH, fragment_file, fragment_length, args['whole_genome'], env, n)
+    run_fragment_builder(OUTPUT_PATH, fragment_file, fragment_length, args['whole_genome'], env, n)
     print(f"\n Fragment with length {fragment_length} has been created.", flush=True)
 
     # Run the supervised classification under the first scenario (not challenging)
-    result_folder = f"{DATA_PATH}/{args['exp_type']}/{exp}/{n}/fragments_{fragment_length}"
+    result_folder = f"{OUTPUT_PATH}/{args['exp_type']}/{exp}/{n}/fragments_{fragment_length}"
     fasta_file = os.path.join(result_folder, env, f'Extremophiles_{env}.fas')
     print(f"\n Classification is started (scenario 1).")
-    run_supervised_classification(DATA_PATH, fasta_file, args['max_k'], result_folder, env, exp, args['classifiers'])
+    run_supervised_classification(result_folder, fasta_file, args['max_k'], result_folder, env, exp, args['classifiers'])
 
     print(f"\n Classification ended (scenario 1).", flush=True)
     # Run the supervised classification under the 2nd scenario (challenging)
     print(f"\n Classification is started (scenario 2).")
-    run_supervised_classification_challenging(DATA_PATH, fasta_file, args['max_k'], result_folder, env, exp,
+    run_supervised_classification_challenging(result_folder, fasta_file, args['max_k'], result_folder, env, exp,
                                               args['classifiers'])
     print(f"\n Classification ended (scenario 2).", flush=True)
 
