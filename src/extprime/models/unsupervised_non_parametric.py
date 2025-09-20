@@ -158,7 +158,7 @@ def run_models(env, path, data_path, fragment_length, k):
 
     algo_names = [f'{dim_name}+{clust_name}' for dim_name in models for clust_name in clust_algorithms if
                   dim_name != "iDeLUCS"]
-    algo_names.append('iDeLUCS')  # Add the standalone iDeLUCS algorithm
+    # algo_names.append('iDeLUCS')  # Add the standalone iDeLUCS algorithm
 
     return summary_dataset, algo_names
 
