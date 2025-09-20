@@ -95,19 +95,19 @@ def read_fasta(file_path):
 
     return id_2_sequences
 
-for env in ENVS:
-    ids_2_dist = {}
-    just_pairs_ids = analyse_candidates("../candidates",env)
-    print(ids_2_dist)
-    max_key = max(ids_2_dist, key=ids_2_dist.get)
-    max_value = ids_2_dist[max_key]
-    print(max_key, max_value)
-
-    min_key = min(ids_2_dist, key=ids_2_dist.get)
-    min_value = ids_2_dist[min_key]
-    print(min_key, min_value)
-
-    json_file_path = f'../Distances/candidates_{env}.json'
-    # Write the dictionary to the JSON file
-    with open(json_file_path, 'w') as json_file:
-        json.dump(ids_2_dist, json_file, indent=4)
+# for env in ENVS:
+#     ids_2_dist = {}
+#     just_pairs_ids = analyse_candidates("../candidates",env)
+#     print(ids_2_dist)
+#     max_key = max(ids_2_dist, key=ids_2_dist.get)
+#     max_value = ids_2_dist[max_key]
+#     print(max_key, max_value)
+#
+#     min_key = min(ids_2_dist, key=ids_2_dist.get)
+#     min_value = ids_2_dist[min_key]
+#     print(min_key, min_value)
+#
+#     json_file_path = f'../Distances/candidates_{env}.json'
+#     # Write the dictionary to the JSON file
+#     with open(json_file_path, 'w') as json_file:
+#         json.dump(ids_2_dist, json_file, indent=4)
