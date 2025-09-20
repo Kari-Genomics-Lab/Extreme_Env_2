@@ -3,7 +3,7 @@ import os
 import json
 from Bio import SeqIO
 import re
-from src.extprime.utils.utils import clean_sequence
+from extprime.utils.utils import clean_sequence
 
 
 GOOD_ALGO = {"Temperature":
