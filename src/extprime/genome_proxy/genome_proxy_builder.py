@@ -55,7 +55,6 @@ def max_subfragments(L, l, max_num_part):
 
 
 def produce_fragment(names, seqs, min_len, is_whole_genome=False, max_num_part=10):
-    print(max_num_part)
     if is_whole_genome:
         return ''.join(seq + 'N' for seq in seqs)
 
