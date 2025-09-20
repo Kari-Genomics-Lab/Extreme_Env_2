@@ -75,5 +75,4 @@ Each folder contains the generated FASTA for that environment and the model outp
 
 ## Data Availability
 
-- **Code:** GitHub ([link]) and archived at Zenodo (DOI: [10.5281/zenodo.XXXXXXX])
 - **Dataset:** Archived at Zenodo (DOI: [10.5281/zenodo.YYYYYYY])

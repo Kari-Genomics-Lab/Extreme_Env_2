@@ -110,10 +110,10 @@ def insert_assignment(summary_dataset, assignment_algo, GT_file, labels):
         print(f'Column "{TAX_LEVEL}" not found in summary_dataset for clustering quality calculation.')
 
 
-def run_models(env, path, fragment_length, k):
-    result_folder = f"{path}/exp2/0/fragments_{fragment_length}"
+def run_models(env, path, data_path, fragment_length, k):
+    result_folder = f"{path}/fragments_{fragment_length}"
 
-    summary_file = f'{path}/Extremophiles_GTDB.tsv'
+    summary_file = f'{data_path}/Extremophiles_GTDB.tsv'
     summary_dataset = pd.read_csv(summary_file, sep='\t',
                                   usecols=["Assembly", "Domain", env,
                                            "pH", "Phylum", "Class", "Order",

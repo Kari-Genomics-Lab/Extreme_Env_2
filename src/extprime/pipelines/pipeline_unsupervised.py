@@ -4,13 +4,14 @@ from extprime.analysis.candidates_identification import candidates_identificatio
 
 ENVS = ["Temperature", "pH"]
 NUM_CLUSTERS = {"Temperature": 4, "pH": 2}
-PATH = "/home/m4safari/projects/def-lila-ab/m4safari/ext1prime/data"
 EXP_NUM = 10
 
 
 def run_pipeline(args):
     fragement_length = args["fragement_length"]
     k = args["k_mer"]
+    path = args["fragment_path"]
+    data_path = args["data_path"]
 
 
     if args["exp_type"] == "parametric":
@@ -27,7 +28,7 @@ def run_pipeline(args):
 
         for env in ENVS:
           for exp in range(EXP_NUM):
-            summary_dataset, algo_names = run_models(env, PATH, fragement_length, k)
+            summary_dataset, algo_names = run_models(env, path, data_path, fragement_length, k)
             # for algo in algo_names:
             analyze_clustering(algo_names, summary_dataset, env)
             candidates_identification(summary_dataset, env)
@@ -41,6 +42,8 @@ def main():
     parser.add_argument('--n_clusters', action='store', type=int, default=4)
     parser.add_argument('--results_folder', action='store', type=str)
     parser.add_argument('--Env', action='store true', type=str)
+    parser.add_argument('--fragment_path', type=str)
+    parser.add_argument('--data_path', type=str)
 
     args = vars(parser.parse_args())
 
