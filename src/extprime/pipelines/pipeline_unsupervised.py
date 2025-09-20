@@ -42,7 +42,7 @@ def main():
     parser.add_argument('--fragement_length', action='store', type=int)
     parser.add_argument('--n_clusters', action='store', type=int, default=4)
     parser.add_argument('--outputs_root', action='store', type=str)
-    parser.add_argument('--env', action='store true', type=str)
+    parser.add_argument('--env', action='store', type=str)
     parser.add_argument('--fragment_path', type=str)
     parser.add_argument('--data_root', type=str)
 
