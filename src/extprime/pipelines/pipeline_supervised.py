@@ -30,9 +30,9 @@ def experiment_task(args, env, exp, fragment_length, n=10):
     result_folder = f"{DATA_PATH}/{args['exp_type']}/{exp}/{n}/fragments_{fragment_length}"
     fasta_file = os.path.join(result_folder, env, f'Extremophiles_{env}.fas')
     print(f"\n Classification is started (scenario 1).")
-    run_supervised_classification(fasta_file, args['max_k'], result_folder, env, exp, args['classifiers'])
-    print(f"\n Classification ended (scenario 1).", flush=True)
+    run_supervised_classification(DATA_PATH, fasta_file, args['max_k'], result_folder, env, exp, args['classifiers'])
 
+    print(f"\n Classification ended (scenario 1).", flush=True)
     # Run the supervised classification under the 2nd scenario (challenging)
     print(f"\n Classification is started (scenario 2).")
     run_supervised_classification_challenging(DATA_PATH, fasta_file, args['max_k'], result_folder, env, exp,
