@@ -13,11 +13,11 @@ ENVS = ["Temperature", "pH"]
 NUM_CLUSTERS = {"Temperature": 4, "pH": 2}
 FRAGMENT_LENGTHS = [10000, 50000, 100000, 250000, 500000, 1000000]
 N_LENGTHS = [100, 500, 1000, 5000, 10000, 50000, 100000]
-DATA_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'data'))
-RES_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'results'))
 
 
 def experiment_task(args, env, exp, fragment_length, n=10):
+    DATA_PATH = args['data_root']
+
     print("\n Running the pipeline is started:")
 
     # Building the fragments
@@ -41,6 +41,7 @@ def experiment_task(args, env, exp, fragment_length, n=10):
 
 
 def hyper_prameter_tuning(args, env, exp, fragment_length):
+    DATA_PATH = args['data_root']
     print("\n Running the pipeline is started:")
     # Building the fragments
     fragment_file = f"{args['exp_type']}/{exp}/fragments_{fragment_length}"
@@ -141,6 +142,8 @@ def main():
     parser.add_argument('--exp_type', action='store', type=str)
     parser.add_argument('--max_k', action='store', type=int)
     parser.add_argument('--whole_genome', action='store_true')
+    parser.add_argument('--data_root', default='data', help='input data root')
+    parser.add_argument('--output_root', default='outputs', help='output results root')
     args = vars(parser.parse_args())
 
     run_pipeline(args)
