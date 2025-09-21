@@ -289,5 +289,5 @@ if __name__ == "__main__":
     original_results, normalized_results = calculator.run_pipeline(
         k_values=[6, 7, 8, 9],
         environments=["pH", "Temperature"],
-        output_dir="results"
+        output_dir="outputs"
     )

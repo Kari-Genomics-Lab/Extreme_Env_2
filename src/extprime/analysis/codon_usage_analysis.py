@@ -10,6 +10,7 @@ import matplotlib.colors as mcolors
 from scipy.stats import spearmanr
 import seaborn as sns
 from adjustText import adjust_text  # For better label placement
+from pathlib import Path
 
 k = 3
 kmers_label = ['AAA', 'AAC', 'AAG', 'AAT', 'ACA', 'ACC', 'ACG', 'ACT', 'AGA', 'AGC', 'AGG', 'ATA', 'ATC', 'ATG', 'CAA',
@@ -435,8 +436,12 @@ def plot_deviations_with_heatmap(clusters, temp, pH, kmers_label, features_impor
 
 
 
-results_folder = os.path.abspath(os.path.join(os.path.dirname(__file__),'..','..', 'results'))
-data_folder = os.path.abspath(os.path.join(os.path.dirname(__file__),'..','..', 'data'))
+results_folder = "outputs/statistics"
+data_folder = "outputs/exp2"
+
+data_root = Path(data_folder).expanduser().resolve()
+output_root = Path(results_folder).expanduser().resolve()
+
 mode = "Env"
 fragment_length = 100000
 

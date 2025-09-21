@@ -1,65 +1,109 @@
-import matplotlib.pyplot as plt
+#!/usr/bin/env python3
+import argparse
 import json
-import os
-from FCGR_analysis import run
-# This script is to get the candidates that are similar in the majority distance metrics
+from pathlib import Path
+from typing import Dict, List, Optional
 
-distance_metrics = ["descriptor", "dssim", "lpips"]
-thresholds = [0.20, 0.50, 0.50]
-majority_num = 3
-RES_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__),'..','..', 'results'))
-DATA_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__),'..','..', 'data'))
+import matplotlib.pyplot as plt
+
+# Hard-coded (per your request)
+METRICS = ["descriptor", "dssim", "lpips"]
+THRESHOLDS = [0.190211, 0.501385, 0.17766]
 
 
-def plot_dist(dist_list, dist_metric):
+def plot_dist(dist_list: List[float], dist_metric: str):
     x_values = list(range(1, len(dist_list) + 1))
-    # Create bar chart
     plt.bar(x_values, dist_list)
-    plt.title(f'candidates bar chart plot/ temp / {dist_metric}')
-    plt.xlabel('Index')
-    plt.ylabel('distances')
+    plt.title(f"candidates bar chart plot / temp / {dist_metric}")
+    plt.xlabel("Index")
+    plt.ylabel("distances")
     plt.grid(True)
     plt.show()
 
-def majority_candidates():
-    dist_data = {}
-    limited_dist = {}
-    for index, d in enumerate(distance_metrics):
-        limited_dist[d] = []
-        with open(f"{RES_PATH}/distances/candidates_{d}_all.json", 'r') as json_file:
 
-            dist_data[d] = json.load(json_file)
+def load_candidates_for_metric(results_root: Path, metric: str, env: Optional[str]) -> Dict[str, float]:
+    """
+    Load a single metric's JSON file.
+    Priority: candidates_{metric}_{env}.json if --env is provided, else candidates_{metric}_all.json
+    If the env-specific file is missing, fall back to *_all.json.
+    """
+    cand_dir = results_root / "distances"
+    paths_to_try = []
+    if env:
+        paths_to_try.append(cand_dir / f"candidates_{metric}_{env}.json")
+    paths_to_try.append(cand_dir / f"candidates_{metric}_all.json")
 
-            for id in dist_data[d]:
-                n1, n2 = id.split("_")[1], id.split("_")[3]
-                if n1 == "000145615.1" and n2 == "000317795.1":
-                    print(dist_data[d][id])
-                # dist = float("{:.2f}".format(dist_data[d][id]))
-                if dist_data[d][id] <= thresholds[index]:
-                    limited_dist[d].append(id)
+    for p in paths_to_try:
+        if p.exists():
+            with open(p, "r") as f:
+                return json.load(f)
+    print(f"[warn] no file found for metric '{metric}' (tried: {', '.join(str(p) for p in paths_to_try)})")
+    return {}
 
-            print(d, len(limited_dist[d]))
 
-    majority = {}
-    for i in limited_dist:
+def majority_candidates(
+    results_root: Path,
+    output_root: Path,
+    majority_num: int,
+    env: Optional[str],
+) -> Dict[str, Dict[str, float]]:
+    # load all metrics using hard-coded thresholds
+    dist_data: Dict[str, Dict[str, float]] = {}
+    limited_dist: Dict[str, set] = {}
+    for metric, th in zip(METRICS, THRESHOLDS):
+        data = load_candidates_for_metric(results_root, metric, env)
+        dist_data[metric] = data
+        kept = {cid for cid, val in data.items() if val <= th}
+        limited_dist[metric] = kept
+        print(f"[info] {metric}: kept {len(kept)} / {len(data)} with threshold ≤ {th}")
 
-        limited_dist[i] = set(limited_dist[i])
-    for i in dist_data[d]:
-        count = 0
-        if i in limited_dist[distance_metrics[0]]:
-            count += 1
-        if i in limited_dist[distance_metrics[1]]:
-            count += 1
-        if i in limited_dist[distance_metrics[2]]:
-            count += 1
+    # majority vote across metrics
+    majority: Dict[str, Dict[str, float]] = {}
+    all_ids = set().union(*[set(d.keys()) for d in dist_data.values()]) if dist_data else set()
+
+    for cid in all_ids:
+        count = sum(1 for m in METRICS if cid in limited_dist.get(m, set()))
         if count >= majority_num:
-            majority[i] = {d: dist_data[d][i] for d in distance_metrics if i in limited_dist[d]}
+            majority[cid] = {m: dist_data[m][cid] for m in METRICS if cid in dist_data[m]}
 
-    print(len(majority))
-    json.dump(majority, open(f"{RES_PATH}/candidates/majority_candidates_new_threshold.json", "w"), indent=4)
+    # write output
+    out_dir = output_root / "candidates"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    env_tag = env if env else "all"
+    out_path = out_dir / f"majority_candidates_{env_tag}.json"
+    with open(out_path, "w") as f:
+        json.dump(majority, f, indent=4)
+    print(f"[ok] wrote {out_path} (n={len(majority)})")
+
     return majority
 
-fragment_length = 100000
-candidates = majority_candidates(RES_PATH)
-for env in ["Temperature", "pH"]:
-    id_2_sequences = run(candidates, env, fragment_length, results_folder, data_folder, 'selected')
+
+def run_pipeline(args):
+    env = args.get("env")
+    results_root = Path(args["data_root"]).expanduser().resolve()   # expects distances/ under here
+    output_root = Path(args["output_root"]).expanduser().resolve()
+    output_root.mkdir(parents=True, exist_ok=True)
+
+    majority_candidates(
+        results_root=results_root,
+        output_root=output_root,
+        majority_num=int(args["majority"]),
+        env=env,
+    )
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--env", action="store", type=str, help="Optional suffix used in filenames (e.g., pH or Temperature)")
+    parser.add_argument("--data_root", default="results", help="root containing distances/ (defaults to 'results')")
+    parser.add_argument("--output_root", default="results", help="where to write candidates/ majority JSON (defaults to 'results')")
+    parser.add_argument("--majority", type=int, default=3, help="minimum number of metrics to pass (default: 3)")
+    # kept for compatibility with your prior script signature; not used here
+    parser.add_argument("--fragment_length", type=int, default=100000, help="placeholder (unused)")
+    args = vars(parser.parse_args())
+
+    run_pipeline(args)
+
+
+if __name__ == "__main__":
+    main()
