@@ -1,3 +1,5 @@
+from os import mkdir
+
 import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
@@ -436,11 +438,15 @@ def plot_deviations_with_heatmap(clusters, temp, pH, kmers_label, features_impor
 
 
 
-results_folder = "outputs/statistics"
+results_folder = "outputs"
 data_folder = "outputs/exp2/0"
 
 data_root = Path(data_folder).expanduser().resolve()
 output_root = Path(results_folder).expanduser().resolve()
+
+os.makedirs(f"{results_folder}/kmer_importance", exist_ok=True)
+os.makedirs(f"{results_folder}/statistics", exist_ok=True)
+
 
 mode = "Env"
 fragment_length = 100000
