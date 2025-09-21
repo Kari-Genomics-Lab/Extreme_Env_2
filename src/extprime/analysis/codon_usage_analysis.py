@@ -437,7 +437,7 @@ def plot_deviations_with_heatmap(clusters, temp, pH, kmers_label, features_impor
 
 
 results_folder = "outputs/statistics"
-data_folder = "outputs/exp2"
+data_folder = "outputs/exp2/0"
 
 data_root = Path(data_folder).expanduser().resolve()
 output_root = Path(results_folder).expanduser().resolve()
