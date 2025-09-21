@@ -1,123 +1,172 @@
+#!/usr/bin/env python3
 import os
 import json
+from pathlib import Path
+from typing import Dict, List
 import numpy as np
+import argparse
 
-# Base directory where your folders are extracted
-base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'results/supervised_classification/exp1'))
+# Fixed defaults (simple & explicit)
+EXPERIMENT_FOLDERS = [str(i) for i in range(10)]
+DEFAULT_FRAGMENT_SIZES = ['10000', '50000', '100000', '250000', '500000', '1000000']
+CLASSIFIER_KEY = "SVM"
 
-# Experiment folders
-experiment_folders = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
 
-# Fragment sizes
-fragment_sizes = ['10000', '50000', '100000', '250000', '500000', '1000000']
+def compute_stats(
+    base_in: Path,
+    env: str,
+    max_k: int,
+    fragments: List[str],
+    whole_genome: bool = False,
+) -> Dict[str, Dict[str, Dict[str, float]]]:
+    data_storage: Dict[str, Dict[str, Dict[str, List[float]]]] = {
+        fragment: {str(k): {'env_values': [], 'tax_values': []} for k in range(1, max_k + 1)}
+        for fragment in fragments
+    }
 
-def statistical_resutls(env):
-    # Initialize a dictionary to store all values for averaging and variance calculation
-    data_storage = {fragment: {str(k): {'env_values': [], 'tax_values': []} for k in range(1, 10)} for fragment in
-                    fragment_sizes}
+    for exp_folder in EXPERIMENT_FOLDERS:
+        exp_folder_path = base_in / exp_folder
 
-    # Iterate through each experiment folder
-    for exp_folder in experiment_folders:
+        for fragment in fragments:
+            fragment_dir = (exp_folder_path / fragment) if whole_genome else (exp_folder_path / f"fragments_{fragment}")
+            json_path = fragment_dir / f"Challenging_Supervised_Results_{env}.json"
 
-        exp_folder_path = os.path.join(base_dir, exp_folder)
+            if not json_path.exists():
+                print(f"[warn] missing: {json_path}")
+                continue
 
-        # Iterate through each fragment size
-        for fragment in fragment_sizes:
+            try:
+                payload = json.loads(json_path.read_text())
+            except json.JSONDecodeError as e:
+                print(f"[warn] bad JSON: {json_path} → {e}")
+                continue
 
-            fragment_path = os.path.join(exp_folder_path, f'fragments_{fragment}')
-            temperature_file = f'Challenging_Supervised_Results_{env}.json'
+            data_for_exp = payload.get(exp_folder, payload)
 
-            # Construct full path to the JSON file
-            json_path = os.path.join(fragment_path, temperature_file)
+            for k in range(1, max_k + 1):
+                k_str = str(k)
+                entry = data_for_exp.get(k_str)
+                if not entry:
+                    continue
+                vals = entry.get(CLASSIFIER_KEY)
+                if (
+                    isinstance(vals, list) and len(vals) >= 2
+                    and isinstance(vals[0], (int, float)) and isinstance(vals[1], (int, float))
+                ):
+                    data_storage[fragment][k_str]['env_values'].append(float(vals[0]))
+                    data_storage[fragment][k_str]['tax_values'].append(float(vals[1]))
+                else:
+                    print(f"[warn] {json_path} k={k_str} missing '{CLASSIFIER_KEY}' values")
 
-            # Check if the file exists and read data
-            if os.path.exists(json_path):
-                with open(json_path, 'r') as file:
-                    data = json.load(file)[exp_folder]  # Assuming '0' is the fixed experiment identifier
+    results: Dict[str, Dict[str, Dict[str, float]]] = {
+        fragment: {str(k): {} for k in range(1, max_k + 1)} for fragment in fragments
+    }
 
-                # Store values for each k-mer size
-                for k in range(1, 10):
-                    k_str = str(k)
-                    if k_str in data:
-                        data_storage[fragment][k_str]['env_values'].append(data[k_str]['SVM'][0])
-                        data_storage[fragment][k_str]['tax_values'].append(data[k_str]['SVM'][1])
+    for fragment in fragments:
+        print(f"\nFragment: {fragment}")
+        for k in range(1, max_k + 1):
+            k_str = str(k)
+            env_vals = data_storage[fragment][k_str]['env_values']
+            tax_vals = data_storage[fragment][k_str]['tax_values']
+            if env_vals and tax_vals:
+                env_avg = float(np.mean(env_vals) * 100.0)
+                env_var = float(np.var(env_vals) * 100.0)
+                tax_avg = float(np.mean(tax_vals) * 100.0)
+                tax_var = float(np.var(tax_vals) * 100.0)
+                results[fragment][k_str] = {
+                    "environment_avg": env_avg,
+                    "environment_var": env_var,
+                    "taxonomy_avg": tax_avg,
+                    "taxonomy_var": tax_var,
+                }
+                print(
+                    f"  k={k}: env avg={env_avg:.4f}, var={env_var:.4f} | "
+                    f"tax avg={tax_avg:.4f}, var={tax_var:.4f}"
+                )
             else:
-                print(f"File not found: {json_path}")
-    # Compute averages and variances for each fragment and k-mer size
-    results = {fragment: {str(k): {} for k in range(1, 10)} for fragment in fragment_sizes}
-    for fragment in fragment_sizes:
-        for k in range(1, 10):
-            k_str = str(k)
-            env_values = data_storage[fragment][k_str]['env_values']
-            tax_values = data_storage[fragment][k_str]['tax_values']
-            if env_values and tax_values:  # Ensure there are values to compute stats
-                results[fragment][k_str]['environment_avg'] = np.mean(env_values) * 100
-                results[fragment][k_str]['environment_var'] = np.var(env_values) * 100
-                results[fragment][k_str]['taxonomy_avg'] = np.mean(tax_values) * 100
-                results[fragment][k_str]['taxonomy_var'] = np.var(tax_values) * 100
+                print(f"  k={k}: (no data)")
+    return results
 
-    # Output the final average results
-    for fragment in fragment_sizes:
-        print(f"Fragment Size: {fragment}")
-        for k in range(1, 10):
-            k_str = str(k)
-            print(
-                f"  K-mer {k}: Environment Avg: {results[fragment][k_str]['environment_avg']}, Environment Var: {results[fragment][k_str]['environment_var']}, Taxonomy Avg: {results[fragment][k_str]['taxonomy_avg']}, Taxonomy Var: {results[fragment][k_str]['taxonomy_var']}")
 
-    # Optionally, save the results to a file
-    output_path = os.path.join(base_dir, f'statistical_results_{env}.json')
-    with open(output_path, 'w') as file:
-        json.dump(results, file, indent=4)
+def compute_maxima(results: Dict[str, Dict[str, Dict[str, float]]]) -> Dict[str, Dict[str, object]]:
+    maxima: Dict[str, Dict[str, object]] = {
+        fragment: {'max_env_avg': 0.0, 'var_env': 0.0, 'kmer_env': None,
+                   'max_tax_avg': 0.0, 'var_tax': 0.0, 'kmer_tax': None}
+        for fragment in results
+    }
 
-    print(f'Statistical results saved to {output_path}')
+    for fragment, kd in results.items():
+        for k, vals in kd.items():
+            if not vals:
+                continue
+            env_avg = vals.get('environment_avg', 0.0)
+            tax_avg = vals.get('taxonomy_avg', 0.0)
 
-statistical_resutls('pH')
-# statistical_resutls('temperature')
+            if env_avg > maxima[fragment]['max_env_avg']:
+                maxima[fragment]['max_env_avg'] = env_avg
+                maxima[fragment]['var_env'] = vals.get('environment_var', 0.0)
+                maxima[fragment]['kmer_env'] = k
 
-# Load the previously saved statistical results
-results_path = os.path.join(base_dir, 'statistical_results_pH.json')
-with open(results_path, 'r') as file:
-    results = json.load(file)
+            if tax_avg > maxima[fragment]['max_tax_avg']:
+                maxima[fragment]['max_tax_avg'] = tax_avg
+                maxima[fragment]['var_tax'] = vals.get('taxonomy_var', 0.0)
+                maxima[fragment]['kmer_tax'] = k
 
-# Initialize a dictionary to store the maximum averages and their variances for each fragment size
-max_averages = {
-    fragment: {
-        'max_env_avg': 0, 'max_tax_avg': 0,
-        'var_env': 0, 'var_tax': 0,
-        'kmer_env': 0, 'kmer_tax': 0
-    } for fragment in results
-}
+    print("\n=== Max Averages per Fragment ===")
+    for fragment, md in maxima.items():
+        print(f"\nFragment: {fragment}")
+        print(f"  Taxonomy: max={md['max_tax_avg']:.4f}, var={md['var_tax']:.4f}, k={md['kmer_tax']}")
+        print(f"  Environment: max={md['max_env_avg']:.4f}, var={md['var_env']:.4f}, k={md['kmer_env']}")
+    return maxima
 
-# Iterate over each fragment size to find the maximum average accuracies
-for fragment in results:
-    for k in results[fragment]:
-        current_env_avg = results[fragment][k]['environment_avg']
-        current_tax_avg = results[fragment][k]['taxonomy_avg']
 
-        # Update max average for environment if the current one is larger
-        if current_env_avg > max_averages[fragment]['max_env_avg']:
-            max_averages[fragment]['max_env_avg'] = current_env_avg
-            max_averages[fragment]['var_env'] = results[fragment][k]['environment_var']
-            max_averages[fragment]['kmer_env'] = k
+def run_pipeline(args):
+    # args keys: env, max_k, whole_genome, data_root, output_root
+    env = args['env']
+    if env is None:
+        raise SystemExit("[error] --env is required (e.g., pH or temperature)")
 
-        # Update max average for taxonomy if the current one is larger
-        if current_tax_avg > max_averages[fragment]['max_tax_avg']:
-            max_averages[fragment]['max_tax_avg'] = current_tax_avg
-            max_averages[fragment]['var_tax'] = results[fragment][k]['taxonomy_var']
-            max_averages[fragment]['kmer_tax'] = k
+    max_k = int(args['max_k'] or 9)
+    whole_genome = bool(args.get('whole_genome', False))
 
-# Output the maximum averages and their variances for each fragment size
-for fragment in max_averages:
-    print(f"Fragment Size: {fragment}")
-    print(
-        f"  Max Taxonomy Avg: {max_averages[fragment]['max_tax_avg']} (Variance: {max_averages[fragment]['var_tax']}, K-mer: {max_averages[fragment]['kmer_tax']})")
+    base_in = Path(args['data_root']).expanduser().resolve()
+    base_out = Path(args['output_root']).expanduser().resolve()
+    base_out.mkdir(parents=True, exist_ok=True)
 
-    print(
-        f"  Max Environment Avg: {max_averages[fragment]['max_env_avg']} (Variance: {max_averages[fragment]['var_env']}, K-mer: {max_averages[fragment]['kmer_env']})")
+    if not base_in.exists():
+        raise SystemExit(f"[error] input directory not found: {base_in}")
 
-# save the max averages to a file
-output_max_path = os.path.join(base_dir, 'max_averages_var_results_temperature.json')
-with open(output_max_path, 'w') as file:
-    json.dump(max_averages, file, indent=4)
+    fragments = ['whole_genome'] if whole_genome else DEFAULT_FRAGMENT_SIZES
 
-print(f'Maximum average results with variance saved to {output_max_path}')
+    results = compute_stats(
+        base_in=base_in,
+        env=env,
+        max_k=max_k,
+        fragments=fragments,
+        whole_genome=whole_genome,
+    )
+
+    stats_out = base_out / f"statistical_results_{env}.json"
+    stats_out.write_text(json.dumps(results, indent=4))
+    print(f"\n[ok] wrote {stats_out}")
+
+    maxima = compute_maxima(results)
+    max_out = base_out / f"max_averages_var_results_{env}.json"
+    max_out.write_text(json.dumps(maxima, indent=4))
+    print(f"[ok] wrote {max_out}")
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--env', action='store', type=str, help="Filename suffix, e.g., pH or temperature")
+    parser.add_argument('--max_k', action='store', type=int, help="Max k-mer (default: 9)")
+    parser.add_argument('--whole_genome', action='store_true', help="Look under <exp>/whole_genome instead of fragments_*")
+    parser.add_argument('--data_root', default='data', help='input data root (directory containing experiment folders 0..9)')
+    parser.add_argument('--output_root', default='outputs', help='output results root')
+    args = vars(parser.parse_args())
+
+    run_pipeline(args)
+
+
+if __name__ == '__main__':
+    main()
