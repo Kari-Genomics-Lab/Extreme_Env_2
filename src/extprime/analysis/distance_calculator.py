@@ -11,11 +11,60 @@ import os
 from Bio import SeqIO
 import math
 
+# --- add this block under your imports ---
+from pathlib import Path
+
+# Official LPIPS v0.1 weights URLs
+_LPIPS_URLS = {
+    "alex":    "https://raw.githubusercontent.com/richzhang/PerceptualSimilarity/master/lpips/weights/v0.1/alex.pth",
+    "vgg":     "https://raw.githubusercontent.com/richzhang/PerceptualSimilarity/master/lpips/weights/v0.1/vgg.pth",
+    "squeeze": "https://raw.githubusercontent.com/richzhang/PerceptualSimilarity/master/lpips/weights/v0.1/squeeze.pth",
+}
+
+def _lpips_pkg_weight_path(net: str) -> Path:
+    import lpips as _lp
+    return Path(_lp.__file__).parent / "weights" / "v0.1" / f"{net}.pth"
+
+def _lpips_cache_weight_path(net: str) -> Path:
+    root = Path(os.environ.get("LPIPS_CACHE_DIR", Path.home() / ".cache" / "lpips"))
+    return root / "weights" / "v0.1" / f"{net}.pth"
+
+def _ensure_lpips_weight(net: str) -> Path:
+    """Return a readable weights path; download to cache if the package one is missing."""
+    pkg = _lpips_pkg_weight_path(net)
+    if pkg.is_file():
+        return pkg
+    cache = _lpips_cache_weight_path(net)
+    if not cache.is_file():
+        cache.parent.mkdir(parents=True, exist_ok=True)
+        url = _LPIPS_URLS.get(net)
+        if not url:
+            raise ValueError(f"Unknown LPIPS net '{net}'. Valid: {list(_LPIPS_URLS)}")
+        print(f"[LPIPS] Downloading '{net}' weights to {cache} …")
+        torch.hub.download_url_to_file(url, str(cache), progress=True)
+    return cache
+
+def get_lpips_model(net: str = "alex"):
+    """
+    Initialize LPIPS. If packaged weights are missing, download to ~/.cache/lpips and load manually.
+    """
+    try:
+        # Works when the wheel includes weights
+        return lpips.LPIPS(net=net)
+    except FileNotFoundError:
+        # Fallback: download & manual load
+        w = _ensure_lpips_weight(net)
+        model = lpips.LPIPS(net=net, pretrained=False)
+        state = torch.load(w, map_location="cpu")
+        model.load_state_dict(state, strict=False)
+        model.eval()
+        return model
+
 
 class DistanceCalculator:
     def __init__(self, fragment_length=100000):
         self.fragment_length = fragment_length
-        self.lpips_model = lpips.LPIPS(net='alex')
+        self.lpips_model = get_lpips_model(net='alex')
 
     def read_fasta(self, file_path):
         """Read FASTA file and return dictionary of sequences"""
@@ -56,8 +105,12 @@ class DistanceCalculator:
         """Calculate LPIPS distance between two images"""
         img1_tensor = self.prepare_image_for_lpips(image1)
         img2_tensor = self.prepare_image_for_lpips(image2)
-        distance = self.lpips_model(img1_tensor, img2_tensor)
-        return distance.item()
+        device = next(self.lpips_model.parameters()).device
+        img1_tensor = img1_tensor.to(device)
+        img2_tensor = img2_tensor.to(device)
+        with torch.no_grad():
+            distance = self.lpips_model(img1_tensor, img2_tensor)
+        return float(distance.item())
 
     def split_image(self, image, split_size=4):
         """Split image into patches"""
