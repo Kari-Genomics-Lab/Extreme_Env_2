@@ -1,0 +1,62 @@
+{
+  "Caldisphaera lagunensis_Thermoanaerobacterium thermosaccharolyticum": {
+    "pair_species_first": [
+      "Thermoanaerobacterium thermosaccharolyticum"
+    ],
+    "pair_species_second": [
+      "Caldisphaera lagunensis"
+    ],
+    "algo": [
+      "VAE+IM",
+      "iDeLUCS",
+      "VAE+affinity_propagation"
+    ],
+    "pair_id_first": [
+      "GCA_000145615.1"
+    ],
+    "pair_id_second": [
+      "GCA_000317795.1"
+    ],
+    "counts": 24
+  },
+  "Archaeoglobus fulgidus_Ferrithrix thermotolerans": {
+    "pair_species_first": [
+      "Archaeoglobus fulgidus"
+    ],
+    "pair_species_second": [
+      "Ferrithrix thermotolerans"
+    ],
+    "algo": [
+      "iDeLUCS",
+      "VAE+affinity_propagation",
+      "VAE+HDBSCAN"
+    ],
+    "pair_id_first": [
+      "GCA_000008665.1"
+    ],
+    "pair_id_second": [
+      "GCA_900128965.1"
+    ],
+    "counts": 22
+  },
+  "Ferrithrix thermotolerans_Thermococcus onnurineus": {
+    "pair_species_first": [
+      "Thermococcus onnurineus"
+    ],
+    "pair_species_second": [
+      "Ferrithrix thermotolerans"
+    ],
+    "algo": [
+      "iDeLUCS",
+      "VAE+affinity_propagation",
+      "VAE+HDBSCAN"
+    ],
+    "pair_id_first": [
+      "GCA_000018365.1"
+    ],
+    "pair_id_second": [
+      "GCA_900128965.1"
+    ],
+    "counts": 21
+  }
+}

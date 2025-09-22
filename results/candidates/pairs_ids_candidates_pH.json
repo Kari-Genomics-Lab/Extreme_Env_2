@@ -1,0 +1,14 @@
+{
+  "Thermoanaerobacterium thermosaccharolyticum,Caldisphaera lagunensis": [
+    "GCA_000145615.1",
+    "GCA_000317795.1"
+  ],
+  "Archaeoglobus fulgidus,Ferrithrix thermotolerans": [
+    "GCA_000008665.1",
+    "GCA_900128965.1"
+  ],
+  "Thermococcus onnurineus,Ferrithrix thermotolerans": [
+    "GCA_000018365.1",
+    "GCA_900128965.1"
+  ]
+}

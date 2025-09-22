@@ -1,3 +1,13 @@
+# Notes for developers / cluster users:
+# - On Compute Canada: DO NOT pip-install OpenCV. Use the module instead:
+#     module load StdEnv/2023
+#     module load opencv/4.8.0
+# - If you need to install Python deps manually:
+#     python3 -m pip install --upgrade scikit-image
+#     python3 -m pip install --upgrade biopython
+# - Optional (local machines only, NOT on CC):
+#     python3 -m pip install --upgrade opencv-python
+
 [build-system]
 requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
@@ -11,18 +21,24 @@ requires-python = ">=3.10"
 license = { text = "MIT" }
 authors = [{ name = "Your Name", email = "you@example.com" }]
 
-# Use normal PyPI names here (no +computecanada local tags).
-# Pin with compatible releases so both PyPI and CC wheelhouse resolve cleanly.
 dependencies = [
   "numpy~=1.25",
   "scipy~=1.11",
   "pandas~=2.1",
   "matplotlib~=3.7",
+  # image stack
+  "Pillow~=10.1",
+  "scikit-image~=0.22",
+  # bio
+  "biopython~=1.81",
+  # sklearn
+  "scikit-learn~=1.3",
+  "scikit-learn-extra~=0.3",
+  # misc transitive pins
   "contourpy~=1.2",
   "kiwisolver~=1.4",
   "cycler~=0.12",
   "fonttools~=4.49",
-  "Pillow~=10.1",
   "pyparsing~=3.0",
   "packaging~=23.2",
   "Jinja2~=3.1",
@@ -36,21 +52,32 @@ dependencies = [
   "pytz>=2024.1",
   "tzdata>=2024.1",
   "typing_extensions~=4.10",
-  "six~=1.16",
-  "scikit-learn~=1.3",
-  "scikit-learn-extra~=0.3"
+  "six~=1.16"
 ]
 
-# Torch is special on Compute Canada—install it separately (see notes below).
-optional-dependencies = { pytorch = ["torch", "torchvision"] }
+# Optional feature sets:
+# - pytorch: installs torch/torchvision + lpips (install using the right CPU/CUDA index-url)
+# - vamb: installs VAMB (depends on torch; usually install together with [pytorch])
+# - opencv-local: for laptops/desktops only; on Compute Canada use `module load opencv`
+[project.optional-dependencies]
+pytorch = [
+  "torch",
+  "torchvision",
+  "lpips"
+]
+vamb = [
+  "vamb"
+]
+opencv-local = [
+  "opencv-python"
+  # or: "opencv-contrib-python"
+]
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
-# If you have non-Python data inside the package, list globs here:
 [tool.setuptools.package-data]
 extprime = ["**/*.txt", "**/*.csv", "**/*.json", "**/*.yaml", "**/*.yml"]
 
-# (Optional) command-line entry points
 [project.scripts]
 extprime-cli = "extprime.cli:main"

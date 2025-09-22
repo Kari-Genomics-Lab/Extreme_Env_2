@@ -12,22 +12,20 @@ This repository provides pipelines to build **composite genome proxies**, comput
 # From repo root
 pip install -e .
 ```
+## Download Data
+Download the extremophile genome assemblies and metadata from Zenodo DOI: [10.5281/zenodo.17148766]
 
 ## Data Layout
 
-Place downloaded assemblies (FASTA .fna) and the metadat file under:
-
-```
-data/
-```
-
+Place downloaded assemblies (FASTA .fna) and the metadat file under `data/`
 All results will be written to `outputs/` automatically.
+All the results of the experiments of this study are available in `results/` folder.
 
-## Experiments
+## Supervised Learning Experiments
 
 ### 1) Effect of Genome Proxy Selection (Multiple Runs)
 
-Tests whether random genome-proxy choice changes classification accuracy.
+Tests whether random genome proxy choice changes classification accuracy.
 
 ```bash
 python3 src/extprime/pipelines/pipeline_supervised.py \
@@ -72,7 +70,30 @@ Each folder contains the generated FASTA for that environment and the model outp
 - `--output_root PATH` – Results root (default: `outputs`)
 - `--whole_genome` – Use entire genomes instead of proxies (optional)
 
+## Unupervised Learning Experiments
 
-## Data Availability
+### 4) Non-parametric clustering and candidate identification
 
-- **Dataset:** Archived at Zenodo (DOI: [10.5281/zenodo.YYYYYYY])
+```bash
+python3 src/extprime/pipelines/pipeline_unsupervised.py \
+  --exp_type non-parametric --k_mer 6 --data_root path_to_the_subfragments --output_root outputs \
+  --fragement_length 100000 --n_clusters 4 --env Temperature
+```
+## Command-Line Flags
+- `--exp_type {parametric, non-parametric} – Choose the experiment`
+- `--k_mer INT – K-mer length`
+- `--fragement_length INT – Fragment length`
+- `--n_clusters INT – Number of clusters (default: 4) - not needed for non-parametric`
+- `--outputs_root PATH – Output results directory`
+- `--env {pH,Temperature} – Environment type`
+- `--fragment_path PATH – Path to a fragment FASTA file`
+- `--data_root PATH – Input data directory`
+
+## FCGR distance calculation and filtering
+
+```bash
+python3 src/extprime/analysis/distance_calculator.py --data_root path_to_the_subfragments
+```
+
+
+

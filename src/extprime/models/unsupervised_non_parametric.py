@@ -5,8 +5,8 @@ import umap
 import hdbscan
 from sklearn.metrics import homogeneity_completeness_v_measure as cluster_quality
 import os
-#import vamb
-#from extprime.utils.idelucs.cluster import iDeLUCS_cluster
+import vamb
+from extprime.utils.idelucs.cluster import iDeLUCS_cluster
 from extprime.utils.utils import kmersFasta
 from sklearn.cluster import MeanShift
 from sklearn.cluster import AffinityPropagation
@@ -15,22 +15,22 @@ from sklearn.cluster import AffinityPropagation
 
 TAX_LEVEL = 'Genus'
 # Dimensionality reduction functions
-# def VAE(sequence_file):
-#     with vamb.vambtools.Reader(sequence_file) as filehandle:
-#         composition = vamb.parsecontigs.Composition.from_file(filehandle)
-#
-#     rpkms = np.ones((composition.matrix.shape[0], 1), dtype=np.float32)
-#     dataloader = vamb.encode.make_dataloader(
-#         rpkms,
-#         composition.matrix,
-#         composition.metadata.lengths,
-#     )
-#     vae = vamb.encode.VAE(nsamples=1, nlatent=32)
-#     vae.trainmodel(dataloader)
-#     latent = vae.encode(dataloader)
-#     names = composition.metadata.identifiers
-#
-#     return names, latent
+def VAE(sequence_file):
+    with vamb.vambtools.Reader(sequence_file) as filehandle:
+        composition = vamb.parsecontigs.Composition.from_file(filehandle)
+
+    rpkms = np.ones((composition.matrix.shape[0], 1), dtype=np.float32)
+    dataloader = vamb.encode.make_dataloader(
+        rpkms,
+        composition.matrix,
+        composition.metadata.lengths,
+    )
+    vae = vamb.encode.VAE(nsamples=1, nlatent=32)
+    vae.trainmodel(dataloader)
+    latent = vae.encode(dataloader)
+    names = composition.metadata.identifiers
+
+    return names, latent
 
 def UMAP(sequence_file=None):
     names, kmers = kmersFasta(sequence_file, k=6)
@@ -72,9 +72,9 @@ def DBSCAN(latent, names):
     return clusterer.labels_
 
 
-# def iDeLUCS(sequence_file=None, params=None):
-#     model = iDeLUCS_cluster(**params)
-#     return model.fit_predict(sequence_file)
+def iDeLUCS(sequence_file=None, params=None):
+    model = iDeLUCS_cluster(**params)
+    return model.fit_predict(sequence_file)
 
 
 def insert_assignment(summary_dataset, assignment_algo, GT_file, labels, result_folder):
@@ -126,22 +126,21 @@ def run_models(env, path, data_path, fragment_length, k, result_folder):
                       'batch_sz': 512, 'k': 6, 'weight': 0.25, 'n_voters': 5}
 
     models = {
-        # "VAE": VAE,
+        "VAE": VAE,
         "UMAP": UMAP,
-        #"iDeLUCS": ""
+        "iDeLUCS": ""
     }
 
     clust_algorithms = {
-        #"IM": IM,
+                        "IM": IM,
                         "HDBSCAN": DBSCAN, "affinity_propagation": affinity_propagation,
                         "meanshift": meanshift}
 
     for model_name, model_func in models.items():
         print(f"......... Processing {model_name} ...............")
         if model_name == "iDeLUCS":
-            # model = iDeLUCS_cluster(**idelucs_params)
-            # labels, latent = model.fit_predict(sequence_file)
-            pass
+            model = iDeLUCS_cluster(**idelucs_params)
+            labels, latent = model.fit_predict(sequence_file)
         else:
             names, latent = model_func(sequence_file)
             for clust_name, clust_func in clust_algorithms.items():
@@ -158,7 +157,7 @@ def run_models(env, path, data_path, fragment_length, k, result_folder):
 
     algo_names = [f'{dim_name}+{clust_name}' for dim_name in models for clust_name in clust_algorithms if
                   dim_name != "iDeLUCS"]
-    # algo_names.append('iDeLUCS')  # Add the standalone iDeLUCS algorithm
+    algo_names.append('iDeLUCS')  # Add the standalone iDeLUCS algorithm
 
     return summary_dataset, algo_names
 
@@ -240,8 +239,8 @@ def analyze_clustering(algo_names, summary_dataset, env, results_folder):
         # Count and display results
         gt_counts = HQ.groupby(env)['mode_cluster'].nunique()
         df2 = pd.DataFrame({env: gt_counts.index, 'Count': gt_counts.values})
-        print(df2)
-        print(df2['Count'].sum())
+        # print(df2)
+        # print(df2['Count'].sum())
 
         # Update df for plotting
         df[name] = np.zeros(len(df))
