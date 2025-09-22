@@ -60,7 +60,7 @@ python3 src/extprime/pipelines/pipeline_supervised.py \
 Results are written under:
 
 ```
-outputs/{exp_type}/{env}/fragments_L{length}[_n{n}]/...
+outputs/{exp_type}/{env}/fragments_{length}/...
 ```
 
 Each folder contains the generated FASTA for that environment and the model outputs produced by the pipeline.
