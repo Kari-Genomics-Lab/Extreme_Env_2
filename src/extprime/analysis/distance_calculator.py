@@ -115,7 +115,7 @@ class DistanceCalculator:
             distance = self.lpips_model(img1_tensor, img2_tensor)
         return float(distance.item())
 
-    def split_image(self, image, split_size=4):
+    def split_image(self, image, split_size=14):
         """Split image into patches"""
         h, w = image.shape[0], image.shape[1]
         col_count = int(math.ceil(h / split_size))
@@ -140,7 +140,7 @@ class DistanceCalculator:
                 tiles[ind, :, :] = patch
         return tiles
 
-    def get_descriptor(self, patch, bin_bounds=[0, 0.33, 0.66, 1.0]):
+    def get_descriptor(self, patch, bin_bounds):
         """Get descriptor for a patch"""
         descriptor = np.zeros(len(bin_bounds) - 1)
 
@@ -287,7 +287,7 @@ class DistanceCalculator:
                     results[f"k_{k}"]["lpips"][pair_key] = lpips_dist
 
                     # Calculate Descriptor distance
-                    desc_dist = self.calculate_descriptor_distance(img1, img2)
+                    desc_dist = self.calculate_descriptor_distance(img1, img2, 2, [0, 8, 16])
                     results[f"k_{k}"]["descriptor"][pair_key] = desc_dist
 
                     processed_pairs += 1
@@ -340,9 +340,6 @@ class DistanceCalculator:
         return results, normalized_results
 
 
-# -----------------
-# Minimal CLI entry
-# -----------------
 if __name__ == "__main__":
     import argparse
 
