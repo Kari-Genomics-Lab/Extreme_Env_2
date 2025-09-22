@@ -17,8 +17,10 @@ Download the extremophile genome assemblies and metadata from Zenodo DOI: [10.52
 
 ## Data Layout
 
-Place downloaded assemblies (FASTA .fna) and the metadat file under `data/`
+Place downloaded assemblies (FASTA .fna) and the metadat file under `data/`. 
+
 All results will be written to `outputs/` automatically.
+
 All the results of the experiments of this study are available in `results/` folder.
 
 ## Supervised Learning Experiments
