@@ -14,7 +14,7 @@ In that work, we showed that extremophiles — despite belonging to maximally di
 pip install -e .
 ```
 ## Download Data
-Download the extremophile genome assemblies and metadata from Zenodo DOI: [10.5281/zenodo.17148766]
+Download the extremophile genome assemblies and metadata from Zenodo DOI: [link](10.5281/zenodo.17148766)
 
 ## Data Layout
 
