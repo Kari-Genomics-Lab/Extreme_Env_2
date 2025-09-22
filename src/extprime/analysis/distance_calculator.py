@@ -50,20 +50,23 @@ def get_lpips_model(net: str = "alex"):
     """
     try:
         # Works when the wheel includes weights
-        return lpips.LPIPS(net=net)
+        m = lpips.LPIPS(net=net)
+        m.eval()
+        return m
     except FileNotFoundError:
         # Fallback: download & manual load
         w = _ensure_lpips_weight(net)
-        model = lpips.LPIPS(net=net, pretrained=False)
+        m = lpips.LPIPS(net=net, pretrained=False)
         state = torch.load(w, map_location="cpu")
-        model.load_state_dict(state, strict=False)
-        model.eval()
-        return model
+        m.load_state_dict(state, strict=False)
+        m.eval()
+        return m
 
 
 class DistanceCalculator:
-    def __init__(self, fragment_length=100000):
+    def __init__(self, fragment_length=100000, data_root: str = "data"):
         self.fragment_length = fragment_length
+        self.data_root = data_root  # NEW: base folder for data
         self.lpips_model = get_lpips_model(net='alex')
 
     def read_fasta(self, file_path):
@@ -170,7 +173,7 @@ class DistanceCalculator:
 
     def load_data(self, env):
         """Load data for a specific environment"""
-        result_folder = f"data/fragments_{self.fragment_length}"
+        result_folder = os.path.join(self.data_root, f"fragments_{self.fragment_length}")
         fasta_file = os.path.join(result_folder, env, f'Extremophiles_{env}.fas')
 
         if not os.path.exists(fasta_file):
@@ -212,8 +215,9 @@ class DistanceCalculator:
                         normalized_distances[pair_key] = 0.0
                 else:
                     # Apply min-max normalization: (x - min) / (max - min)
+                    denom = (max_dist - min_dist)
                     for pair_key, dist_value in distances.items():
-                        normalized_value = (dist_value - min_dist) / (max_dist - min_dist)
+                        normalized_value = (dist_value - min_dist) / denom
                         normalized_distances[pair_key] = normalized_value
 
                 normalized_results[k_val][method] = normalized_distances
@@ -336,11 +340,30 @@ class DistanceCalculator:
         return results, normalized_results
 
 
-# Run the pipeline
+# -----------------
+# Minimal CLI entry
+# -----------------
 if __name__ == "__main__":
-    calculator = DistanceCalculator(fragment_length=100000)
-    original_results, normalized_results = calculator.run_pipeline(
-        k_values=[6, 7, 8, 9],
-        environments=["pH", "Temperature"],
-        output_dir="outputs"
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description="Compute FCGR-based distances (DSSIM/LPIPS/descriptor) and save JSONs."
     )
+    parser.add_argument("--envs", nargs="+", default=["pH", "Temperature"],
+                        help="Environments to process (default: pH Temperature)")
+    parser.add_argument("--k", nargs="+", type=int, default=[6],
+                        help="k-mer values (default: 6)")
+    parser.add_argument("--fragment_length", type=int, default=100000,
+                        help="Fragment length folder name (default: 100000)")
+    parser.add_argument("--data_root", default="data",
+                        help="Root data folder (default: data)")
+    parser.add_argument("--output_root", default="outputs/distances",
+                        help="Output folder for JSON files (default: outputs/distances)")
+    args = parser.parse_args()
+
+    # Normalize paths (harmless, but avoids surprises)
+    data_root = str(Path(args.data_root).expanduser().resolve())
+    output_root = str(Path(args.output_root).expanduser().resolve())
+
+    calc = DistanceCalculator(fragment_length=args.fragment_length, data_root=data_root)
+    calc.run_pipeline(k_values=args.k, environments=args.envs, output_dir=output_root)
