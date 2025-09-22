@@ -1,8 +1,9 @@
-# ExtPrime: Extremophile Genomic-Signature Experiments
+## Life at the extremes
 
-**TL;DR:** Build composite genome proxies and run supervised learning experiments to classify extremophile organisms by temperature and pH tolerance using k-mer features.
+This repository contains the official implementation of the study:
+Life at the extremes: Maximally divergent microbes with similar genomic signatures linked to extreme environments (Safari et al., 2025): [preprint](https://doi.org/10.1101/2025.06.04.657665)
 
-This repository provides pipelines to build **composite genome proxies**, compute **k-mer features**, and run **supervised experiments** on extremophile datasets (Temperature & pH). Inputs live in `data/`; all generated results go to `outputs/`.
+In that work, we showed that extremophiles — despite belonging to maximally divergent lineages — can converge toward highly similar genomic k-mer signatures when adapting to extreme environments (temperature, pH, and beyond). These convergent patterns highlight the role of large-scale mutational and selective pressures in shaping microbial genomes under stress.
 
 ---
 
